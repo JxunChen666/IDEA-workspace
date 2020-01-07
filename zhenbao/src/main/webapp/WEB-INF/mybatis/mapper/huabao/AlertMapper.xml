@@ -1,0 +1,465 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="AlertMapper">
+    <resultMap id="BaseResultMap" type="com.fangjian.zhenbao.business.huabo.entity.Alert">
+        <id column="redis_alert_id" property="redisAlertId" jdbcType="INTEGER"/>
+        <result column="redis_alert_time" property="redisAlertTime" jdbcType="BIGINT"/>
+        <result column="gps_status" property="gpsStatus" jdbcType="TINYINT"/>
+        <result column="redis_alert_gps_value_lng_flag" property="redisAlertGpsValueLngFlag" jdbcType="TINYINT"/>
+        <result column="redis_alert_gps_value_lng_value" property="redisAlertGpsValueLngValue" jdbcType="DOUBLE"/>
+        <result column="redis_alert_gps_value_lat_flag" property="redisAlertGpsValueLatFlag" jdbcType="TINYINT"/>
+        <result column="redis_alert_gps_value_lat_value" property="redisAlertGpsValueLatValue" jdbcType="DOUBLE"/>
+        <result column="redis_alert_gps_name" property="redisAlertGpsName" jdbcType="VARCHAR"/>
+        <result column="redis_alert_device_id" property="redisAlertDeviceId" jdbcType="VARCHAR"/>
+        <result column="redis_alert_alert_id" property="redisAlertAlertId" jdbcType="VARCHAR"/>
+        <result column="redis_alert_alert_name" property="redisAlertAlertName" jdbcType="VARCHAR"/>
+        <result column="redis_alert_trip_time" property="redisAlertTripTime" jdbcType="BIGINT"/>
+        <result column="collect_date" property="collectDate" jdbcType="VARCHAR"/>
+        <result column="number" property="number" jdbcType="INTEGER"/>
+        <result column="speed" property="speed" jdbcType="DECIMAL"/>
+        <result column="pressure" property="pressure" jdbcType="DECIMAL"/>
+        <result column="output_torque" property="outputTorque" jdbcType="INTEGER"/>
+        <result column="friction_torque" property="frictionTorque" jdbcType="INTEGER"/>
+        <result column="rotation_speed" property="rotationSpeed" jdbcType="DECIMAL"/>
+        <result column="fuel_flow" property="fuelFlow" jdbcType="DECIMAL"/>
+        <result column="scr_up" property="scrUp" jdbcType="DECIMAL"/>
+        <result column="scr_down" property="scrDown" jdbcType="DECIMAL"/>
+        <result column="reactor" property="reactor" jdbcType="DECIMAL"/>
+        <result column="air_inflow" property="airInflow" jdbcType="DECIMAL"/>
+        <result column="scr_in" property="scrIn" jdbcType="DECIMAL"/>
+        <result column="scr_out" property="scrOut" jdbcType="DECIMAL"/>
+        <result column="dpf" property="dpf" jdbcType="DECIMAL"/>
+        <result column="engine_temperature" property="engineTemperature" jdbcType="INTEGER"/>
+        <result column="oil_position" property="oilPosition" jdbcType="DECIMAL"/>
+        <result column="total_mileage" property="totalMileage" jdbcType="DECIMAL"/>
+        <result column="remark" property="remark" jdbcType="VARCHAR"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+    redis_alert_id, redis_alert_time, gps_status, redis_alert_gps_value_lng_flag, redis_alert_gps_value_lng_value, 
+    redis_alert_gps_value_lat_flag, redis_alert_gps_value_lat_value, redis_alert_gps_name, 
+    redis_alert_device_id, redis_alert_alert_id, redis_alert_alert_name, redis_alert_trip_time, 
+    collect_date, number, speed, pressure, output_torque, friction_torque, rotation_speed, 
+    fuel_flow, scr_up, scr_down, reactor, air_inflow, scr_in, scr_out, dpf, engine_temperature, 
+    oil_position, total_mileage, remark
+  </sql>
+
+
+    <resultMap id="CarOffMap" type="com.fangjian.zhenbao.business.huabo.entity.CarOffModel">
+        <result column="car_name" property="carName" jdbcType="VARCHAR"/>
+        <result column="car_identity_code" property="carIdentityCode" jdbcType="VARCHAR"/>
+        <result column="car_device_id" property="carDeviceId" jdbcType="VARCHAR"/>
+        <result column="user_name" property="userName" jdbcType="VARCHAR"/>
+        <result column="user_truename" property="userTruename" jdbcType="VARCHAR"/>
+        <result column="user_mobile" property="userMobile" jdbcType="VARCHAR"/>
+        <result column="type" property="type" jdbcType="INTEGER"/>
+        <result column="redis_alert_time" property="redisAlertTime" jdbcType="BIGINT"/>
+    </resultMap>
+    <sql id="queryCondition">
+        <![CDATA[
+        FROM app_base_car c INNER JOIN
+        (SELECT redis_alert_device_id,redis_alert_time FROM
+        (SELECT redis_alert_device_id,MAX(redis_alert_time) redis_alert_time FROM app_redis_alert
+        GROUP BY redis_alert_device_id) aa WHERE redis_alert_time<=#{offTime})a ON c.car_device_id=a.redis_alert_device_id
+        LEFT JOIN app_base_user u ON c.car_user_id=u.user_id
+        WHERE c.customer=#{customer}
+        AND c.car_name NOT LIKE '%虚拟车%'
+        ]]>
+        <if test="carName!=null and carName!=''">
+            AND c.car_name=#{carName}
+        </if>
+    </sql>
+    <select id="getCarOffList" resultMap="CarOffMap">
+        SELECT
+        c.car_name,c.car_identity_code,c.car_device_id,u.user_name,u.user_truename,u.user_mobile,a.redis_alert_time,c.type
+        <include refid="queryCondition"/>
+        <if test="start!=null">
+            ORDER BY ${sort} ${order}
+            limit #{start}, #{pageSize}
+        </if>
+        <if test="start==null">
+            ORDER BY redis_alert_time ASC
+        </if>
+    </select>
+    <select id="getCarOffListCount" resultType="long">
+        SELECT count(c.car_name)
+        <include refid="queryCondition"/>
+    </select>
+
+
+    <resultMap id="AlertMap" type="com.fangjian.zhenbao.business.huabo.entity.FaultAlert">
+        <result column="redis_alert_time" property="redisAlertTime" jdbcType="BIGINT"/>
+        <result column="redis_alert_alert_name" property="redisAlertAlertName" jdbcType="VARCHAR"/>
+        <result column="car_name" property="carName" jdbcType="VARCHAR"/>
+        <result column="car_identity_code" property="carIdentityCode" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <select id="getNewestAlert" resultMap="AlertMap">
+        SELECT a.redis_alert_time,a.redis_alert_alert_name,c.car_name,c.car_identity_code
+        FROM app_redis_alert a,app_base_device d,app_base_car c
+        WHERE a.redis_alert_device_id=d.dev_id AND c.car_device_id=d.dev_id AND d.customer=#{customer}
+        AND c.car_name NOT LIKE '%虚拟车%'
+        ORDER BY a.redis_alert_time DESC
+        LIMIT 15
+    </select>
+
+
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer">
+        select
+        <include refid="Base_Column_List"/>
+        from app_redis_alert
+        where redis_alert_id = #{redisAlertId,jdbcType=INTEGER}
+    </select>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from app_redis_alert
+    where redis_alert_id = #{redisAlertId,jdbcType=INTEGER}
+  </delete>
+    <insert id="insert" parameterType="com.fangjian.zhenbao.business.huabo.entity.Alert">
+    insert into app_redis_alert (redis_alert_id, redis_alert_time, gps_status, 
+      redis_alert_gps_value_lng_flag, redis_alert_gps_value_lng_value, 
+      redis_alert_gps_value_lat_flag, redis_alert_gps_value_lat_value, 
+      redis_alert_gps_name, redis_alert_device_id, 
+      redis_alert_alert_id, redis_alert_alert_name, 
+      redis_alert_trip_time, collect_date, number, 
+      speed, pressure, output_torque, 
+      friction_torque, rotation_speed, fuel_flow, 
+      scr_up, scr_down, reactor, 
+      air_inflow, scr_in, scr_out, 
+      dpf, engine_temperature, oil_position, 
+      total_mileage, remark)
+    values (#{redisAlertId,jdbcType=INTEGER}, #{redisAlertTime,jdbcType=BIGINT}, #{gpsStatus,jdbcType=TINYINT}, 
+      #{redisAlertGpsValueLngFlag,jdbcType=TINYINT}, #{redisAlertGpsValueLngValue,jdbcType=DOUBLE}, 
+      #{redisAlertGpsValueLatFlag,jdbcType=TINYINT}, #{redisAlertGpsValueLatValue,jdbcType=DOUBLE}, 
+      #{redisAlertGpsName,jdbcType=VARCHAR}, #{redisAlertDeviceId,jdbcType=VARCHAR}, 
+      #{redisAlertAlertId,jdbcType=VARCHAR}, #{redisAlertAlertName,jdbcType=VARCHAR}, 
+      #{redisAlertTripTime,jdbcType=BIGINT}, #{collectDate,jdbcType=VARCHAR}, #{number,jdbcType=INTEGER}, 
+      #{speed,jdbcType=DECIMAL}, #{pressure,jdbcType=DECIMAL}, #{outputTorque,jdbcType=INTEGER}, 
+      #{frictionTorque,jdbcType=INTEGER}, #{rotationSpeed,jdbcType=DECIMAL}, #{fuelFlow,jdbcType=DECIMAL}, 
+      #{scrUp,jdbcType=DECIMAL}, #{scrDown,jdbcType=DECIMAL}, #{reactor,jdbcType=DECIMAL}, 
+      #{airInflow,jdbcType=DECIMAL}, #{scrIn,jdbcType=DECIMAL}, #{scrOut,jdbcType=DECIMAL}, 
+      #{dpf,jdbcType=DECIMAL}, #{engineTemperature,jdbcType=INTEGER}, #{oilPosition,jdbcType=DECIMAL}, 
+      #{totalMileage,jdbcType=DECIMAL}, #{remark,jdbcType=VARCHAR})
+  </insert>
+    <insert id="insertSelective" parameterType="com.fangjian.zhenbao.business.huabo.entity.Alert">
+        insert into app_redis_alert
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="redisAlertId != null">
+                redis_alert_id,
+            </if>
+            <if test="redisAlertTime != null">
+                redis_alert_time,
+            </if>
+            <if test="gpsStatus != null">
+                gps_status,
+            </if>
+            <if test="redisAlertGpsValueLngFlag != null">
+                redis_alert_gps_value_lng_flag,
+            </if>
+            <if test="redisAlertGpsValueLngValue != null">
+                redis_alert_gps_value_lng_value,
+            </if>
+            <if test="redisAlertGpsValueLatFlag != null">
+                redis_alert_gps_value_lat_flag,
+            </if>
+            <if test="redisAlertGpsValueLatValue != null">
+                redis_alert_gps_value_lat_value,
+            </if>
+            <if test="redisAlertGpsName != null">
+                redis_alert_gps_name,
+            </if>
+            <if test="redisAlertDeviceId != null">
+                redis_alert_device_id,
+            </if>
+            <if test="redisAlertAlertId != null">
+                redis_alert_alert_id,
+            </if>
+            <if test="redisAlertAlertName != null">
+                redis_alert_alert_name,
+            </if>
+            <if test="redisAlertTripTime != null">
+                redis_alert_trip_time,
+            </if>
+            <if test="collectDate != null">
+                collect_date,
+            </if>
+            <if test="number != null">
+                number,
+            </if>
+            <if test="speed != null">
+                speed,
+            </if>
+            <if test="pressure != null">
+                pressure,
+            </if>
+            <if test="outputTorque != null">
+                output_torque,
+            </if>
+            <if test="frictionTorque != null">
+                friction_torque,
+            </if>
+            <if test="rotationSpeed != null">
+                rotation_speed,
+            </if>
+            <if test="fuelFlow != null">
+                fuel_flow,
+            </if>
+            <if test="scrUp != null">
+                scr_up,
+            </if>
+            <if test="scrDown != null">
+                scr_down,
+            </if>
+            <if test="reactor != null">
+                reactor,
+            </if>
+            <if test="airInflow != null">
+                air_inflow,
+            </if>
+            <if test="scrIn != null">
+                scr_in,
+            </if>
+            <if test="scrOut != null">
+                scr_out,
+            </if>
+            <if test="dpf != null">
+                dpf,
+            </if>
+            <if test="engineTemperature != null">
+                engine_temperature,
+            </if>
+            <if test="oilPosition != null">
+                oil_position,
+            </if>
+            <if test="totalMileage != null">
+                total_mileage,
+            </if>
+            <if test="remark != null">
+                remark,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="redisAlertId != null">
+                #{redisAlertId,jdbcType=INTEGER},
+            </if>
+            <if test="redisAlertTime != null">
+                #{redisAlertTime,jdbcType=BIGINT},
+            </if>
+            <if test="gpsStatus != null">
+                #{gpsStatus,jdbcType=TINYINT},
+            </if>
+            <if test="redisAlertGpsValueLngFlag != null">
+                #{redisAlertGpsValueLngFlag,jdbcType=TINYINT},
+            </if>
+            <if test="redisAlertGpsValueLngValue != null">
+                #{redisAlertGpsValueLngValue,jdbcType=DOUBLE},
+            </if>
+            <if test="redisAlertGpsValueLatFlag != null">
+                #{redisAlertGpsValueLatFlag,jdbcType=TINYINT},
+            </if>
+            <if test="redisAlertGpsValueLatValue != null">
+                #{redisAlertGpsValueLatValue,jdbcType=DOUBLE},
+            </if>
+            <if test="redisAlertGpsName != null">
+                #{redisAlertGpsName,jdbcType=VARCHAR},
+            </if>
+            <if test="redisAlertDeviceId != null">
+                #{redisAlertDeviceId,jdbcType=VARCHAR},
+            </if>
+            <if test="redisAlertAlertId != null">
+                #{redisAlertAlertId,jdbcType=VARCHAR},
+            </if>
+            <if test="redisAlertAlertName != null">
+                #{redisAlertAlertName,jdbcType=VARCHAR},
+            </if>
+            <if test="redisAlertTripTime != null">
+                #{redisAlertTripTime,jdbcType=BIGINT},
+            </if>
+            <if test="collectDate != null">
+                #{collectDate,jdbcType=VARCHAR},
+            </if>
+            <if test="number != null">
+                #{number,jdbcType=INTEGER},
+            </if>
+            <if test="speed != null">
+                #{speed,jdbcType=DECIMAL},
+            </if>
+            <if test="pressure != null">
+                #{pressure,jdbcType=DECIMAL},
+            </if>
+            <if test="outputTorque != null">
+                #{outputTorque,jdbcType=INTEGER},
+            </if>
+            <if test="frictionTorque != null">
+                #{frictionTorque,jdbcType=INTEGER},
+            </if>
+            <if test="rotationSpeed != null">
+                #{rotationSpeed,jdbcType=DECIMAL},
+            </if>
+            <if test="fuelFlow != null">
+                #{fuelFlow,jdbcType=DECIMAL},
+            </if>
+            <if test="scrUp != null">
+                #{scrUp,jdbcType=DECIMAL},
+            </if>
+            <if test="scrDown != null">
+                #{scrDown,jdbcType=DECIMAL},
+            </if>
+            <if test="reactor != null">
+                #{reactor,jdbcType=DECIMAL},
+            </if>
+            <if test="airInflow != null">
+                #{airInflow,jdbcType=DECIMAL},
+            </if>
+            <if test="scrIn != null">
+                #{scrIn,jdbcType=DECIMAL},
+            </if>
+            <if test="scrOut != null">
+                #{scrOut,jdbcType=DECIMAL},
+            </if>
+            <if test="dpf != null">
+                #{dpf,jdbcType=DECIMAL},
+            </if>
+            <if test="engineTemperature != null">
+                #{engineTemperature,jdbcType=INTEGER},
+            </if>
+            <if test="oilPosition != null">
+                #{oilPosition,jdbcType=DECIMAL},
+            </if>
+            <if test="totalMileage != null">
+                #{totalMileage,jdbcType=DECIMAL},
+            </if>
+            <if test="remark != null">
+                #{remark,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+    <update id="updateByPrimaryKeySelective" parameterType="com.fangjian.zhenbao.business.huabo.entity.Alert">
+        update app_redis_alert
+        <set>
+            <if test="redisAlertTime != null">
+                redis_alert_time = #{redisAlertTime,jdbcType=BIGINT},
+            </if>
+            <if test="gpsStatus != null">
+                gps_status = #{gpsStatus,jdbcType=TINYINT},
+            </if>
+            <if test="redisAlertGpsValueLngFlag != null">
+                redis_alert_gps_value_lng_flag = #{redisAlertGpsValueLngFlag,jdbcType=TINYINT},
+            </if>
+            <if test="redisAlertGpsValueLngValue != null">
+                redis_alert_gps_value_lng_value = #{redisAlertGpsValueLngValue,jdbcType=DOUBLE},
+            </if>
+            <if test="redisAlertGpsValueLatFlag != null">
+                redis_alert_gps_value_lat_flag = #{redisAlertGpsValueLatFlag,jdbcType=TINYINT},
+            </if>
+            <if test="redisAlertGpsValueLatValue != null">
+                redis_alert_gps_value_lat_value = #{redisAlertGpsValueLatValue,jdbcType=DOUBLE},
+            </if>
+            <if test="redisAlertGpsName != null">
+                redis_alert_gps_name = #{redisAlertGpsName,jdbcType=VARCHAR},
+            </if>
+            <if test="redisAlertDeviceId != null">
+                redis_alert_device_id = #{redisAlertDeviceId,jdbcType=VARCHAR},
+            </if>
+            <if test="redisAlertAlertId != null">
+                redis_alert_alert_id = #{redisAlertAlertId,jdbcType=VARCHAR},
+            </if>
+            <if test="redisAlertAlertName != null">
+                redis_alert_alert_name = #{redisAlertAlertName,jdbcType=VARCHAR},
+            </if>
+            <if test="redisAlertTripTime != null">
+                redis_alert_trip_time = #{redisAlertTripTime,jdbcType=BIGINT},
+            </if>
+            <if test="collectDate != null">
+                collect_date = #{collectDate,jdbcType=VARCHAR},
+            </if>
+            <if test="number != null">
+                number = #{number,jdbcType=INTEGER},
+            </if>
+            <if test="speed != null">
+                speed = #{speed,jdbcType=DECIMAL},
+            </if>
+            <if test="pressure != null">
+                pressure = #{pressure,jdbcType=DECIMAL},
+            </if>
+            <if test="outputTorque != null">
+                output_torque = #{outputTorque,jdbcType=INTEGER},
+            </if>
+            <if test="frictionTorque != null">
+                friction_torque = #{frictionTorque,jdbcType=INTEGER},
+            </if>
+            <if test="rotationSpeed != null">
+                rotation_speed = #{rotationSpeed,jdbcType=DECIMAL},
+            </if>
+            <if test="fuelFlow != null">
+                fuel_flow = #{fuelFlow,jdbcType=DECIMAL},
+            </if>
+            <if test="scrUp != null">
+                scr_up = #{scrUp,jdbcType=DECIMAL},
+            </if>
+            <if test="scrDown != null">
+                scr_down = #{scrDown,jdbcType=DECIMAL},
+            </if>
+            <if test="reactor != null">
+                reactor = #{reactor,jdbcType=DECIMAL},
+            </if>
+            <if test="airInflow != null">
+                air_inflow = #{airInflow,jdbcType=DECIMAL},
+            </if>
+            <if test="scrIn != null">
+                scr_in = #{scrIn,jdbcType=DECIMAL},
+            </if>
+            <if test="scrOut != null">
+                scr_out = #{scrOut,jdbcType=DECIMAL},
+            </if>
+            <if test="dpf != null">
+                dpf = #{dpf,jdbcType=DECIMAL},
+            </if>
+            <if test="engineTemperature != null">
+                engine_temperature = #{engineTemperature,jdbcType=INTEGER},
+            </if>
+            <if test="oilPosition != null">
+                oil_position = #{oilPosition,jdbcType=DECIMAL},
+            </if>
+            <if test="totalMileage != null">
+                total_mileage = #{totalMileage,jdbcType=DECIMAL},
+            </if>
+            <if test="remark != null">
+                remark = #{remark,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where redis_alert_id = #{redisAlertId,jdbcType=INTEGER}
+    </update>
+    <update id="updateByPrimaryKey" parameterType="com.fangjian.zhenbao.business.huabo.entity.Alert">
+    update app_redis_alert
+    set redis_alert_time = #{redisAlertTime,jdbcType=BIGINT},
+      gps_status = #{gpsStatus,jdbcType=TINYINT},
+      redis_alert_gps_value_lng_flag = #{redisAlertGpsValueLngFlag,jdbcType=TINYINT},
+      redis_alert_gps_value_lng_value = #{redisAlertGpsValueLngValue,jdbcType=DOUBLE},
+      redis_alert_gps_value_lat_flag = #{redisAlertGpsValueLatFlag,jdbcType=TINYINT},
+      redis_alert_gps_value_lat_value = #{redisAlertGpsValueLatValue,jdbcType=DOUBLE},
+      redis_alert_gps_name = #{redisAlertGpsName,jdbcType=VARCHAR},
+      redis_alert_device_id = #{redisAlertDeviceId,jdbcType=VARCHAR},
+      redis_alert_alert_id = #{redisAlertAlertId,jdbcType=VARCHAR},
+      redis_alert_alert_name = #{redisAlertAlertName,jdbcType=VARCHAR},
+      redis_alert_trip_time = #{redisAlertTripTime,jdbcType=BIGINT},
+      collect_date = #{collectDate,jdbcType=VARCHAR},
+      number = #{number,jdbcType=INTEGER},
+      speed = #{speed,jdbcType=DECIMAL},
+      pressure = #{pressure,jdbcType=DECIMAL},
+      output_torque = #{outputTorque,jdbcType=INTEGER},
+      friction_torque = #{frictionTorque,jdbcType=INTEGER},
+      rotation_speed = #{rotationSpeed,jdbcType=DECIMAL},
+      fuel_flow = #{fuelFlow,jdbcType=DECIMAL},
+      scr_up = #{scrUp,jdbcType=DECIMAL},
+      scr_down = #{scrDown,jdbcType=DECIMAL},
+      reactor = #{reactor,jdbcType=DECIMAL},
+      air_inflow = #{airInflow,jdbcType=DECIMAL},
+      scr_in = #{scrIn,jdbcType=DECIMAL},
+      scr_out = #{scrOut,jdbcType=DECIMAL},
+      dpf = #{dpf,jdbcType=DECIMAL},
+      engine_temperature = #{engineTemperature,jdbcType=INTEGER},
+      oil_position = #{oilPosition,jdbcType=DECIMAL},
+      total_mileage = #{totalMileage,jdbcType=DECIMAL},
+      remark = #{remark,jdbcType=VARCHAR}
+    where redis_alert_id = #{redisAlertId,jdbcType=INTEGER}
+  </update>
+</mapper>

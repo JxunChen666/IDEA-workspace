@@ -1,0 +1,117 @@
+@charset "utf-8";
+/* CSS Document */
+* {
+	margin: 0;
+	padding: 0;
+}
+
+body {
+	/* background: #E4FFCF url(../../static/img/bg.jpg);
+	background-repeat: no-repeat;
+	filter: alpha(opacity = 100);
+	background-attachment: fixed;
+	background-size: 100% 100%; */
+	
+}
+
+#ul1 {
+	margin: 100px 160px auto; /* width:780px;*/
+}
+
+#ul1 li {
+	width: 18%;
+	height: 150px;
+	float: left;
+	margin: 15px;
+	list-style: none;
+	padding: 20px;
+	box-shadow: 2px 2px 2px #999;
+	-webkit-transition: 0.5s all ease;
+	-moz-transition: 0.5s all ease;
+	-ms-transition: 0.5s all ease;
+	-o-transition: 0.5s all ease;
+	background: rgba(255, 255, 255, .3);
+	box-shadow: 0 3px 3px rgba(0, 0, 0, .3) !important;
+	line-height: 140px;
+	-wibkit-box-shadow: 0 3px 0 #ff0000;
+	text-align: center;
+	text-decoration: none;
+	color: #fff;
+}
+
+#ul1 li a {
+	text-decoration: none;
+	color: rgba(50, 150, 255, 0.8);
+	text-shadow: 0 -1px 0 rgba(0, 0, 0, .6);
+	font-size: 19px;
+}
+/*#ul1 li h2 {font-size:24px; line-height:40px; font-family:"Microsoft YaHei";}
+#ul1 li p {font-size:14px; line-height:18px;}
+#ul1 li p a{color:#F33; text-decoration:none;}
+#ul1 li p a:hover{text-decoration:underline; color:#F00;}*/
+#ul1 .back {
+	text-shadow: 0 0 10px black;
+	-webkit-transform: scale(0.9);
+	-moz-transform: scale(0.9);
+	-ms-transform: scale(0.9);
+	-o-transform: scale(0.9);
+	box-shadow: 0 0 10px 4px white;
+	opacity: 0.8;
+	color: rgba(0, 0, 0, 0);
+}
+
+#ul1 .back a {
+	text-shadow: 0 0 5px #CB7FDA;
+	-webkit-transform: scale(0.9);
+	-moz-transform: scale(0.9);
+	-ms-transform: scale(0.9);
+	-o-transform: scale(0.9);
+	box-shadow: 0 0 10px 4px white;
+	/* opacity: 0.8;
+	color: rgba(255, 0, 0, 0);*/
+}
+
+#ul1 .active {
+	-webkit-transform: scale(1.1);
+	-moz-transform: scale(1.1);
+	-ms-transform: scale(1.1);
+	-o-transform: scale(1.1);
+	box-shadow: 3px 3px 4px #888;
+}
+
+/*
+	Background Stretcher jQuery Plugin
+	?2011 ajaxBlender.com
+	For any questions please visit www.ajaxblender.com 
+	or email us at support@ajaxblender.com
+*/
+HTML {
+	_background: url(/images/trans.gif) no-repeat fixed;
+}
+
+.bgstretcher-area {
+	text-align: left;
+}
+
+.bgstretcher,.bgstretcher UL,.bgstretcher UL LI {
+	position: absolute;
+	top: 0;
+	left: 0;
+}
+
+.bgstretcher UL,.bgstretcher UL LI {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.bgstretcher {
+	background: black;
+	overflow: hidden;
+	width: 100%;
+	position: fixed;
+	z-index: 1;
+	_position: absolute; /*IE6 doesn't support fixed positioning*/
+	top: 0;
+	left: 0;
+}

@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx" xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:task="http://www.springframework.org/schema/task"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+          http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+          http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+          http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+          http://www.springframework.org/schema/task
+	    http://www.springframework.org/schema/task/spring-task-3.0.xsd">
+
+    <!--加载配置信息-->
+    <context:property-placeholder location="classpath:resources.properties" />
+
+    <context:component-scan base-package="com.fangjian.zhenbao.*">
+        <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller" />
+        <context:exclude-filter type="annotation" expression="org.springframework.web.bind.annotation.ControllerAdvice" />
+    </context:component-scan>
+
+    <aop:aspectj-autoproxy expose-proxy="true" />
+
+
+    <!--*************************************************************** system数据源 开始***************************************************************-->
+    <bean id="systemDataSource" class="com.alibaba.druid.pool.DruidDataSource"
+          init-method="init" destroy-method="close">
+        <!-- 基本属性 url、user、password -->
+        <property name="url" value="${connection.url}" />
+        <property name="username" value="${connection.username}" />
+        <property name="password" value="${connection.password}" />
+
+        <!-- 配置初始化大小、最小、最大 -->
+        <property name="initialSize" value="${druid.initialSize}" />
+        <property name="minIdle" value="${druid.minIdle}" />
+        <property name="maxActive" value="${druid.maxActive}" />
+
+        <!-- 配置获取连接等待超时的时间 -->
+        <property name="maxWait" value="${druid.maxWait}" />
+        <!-- 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒 -->
+        <property name="timeBetweenEvictionRunsMillis" value="${druid.timeBetweenEvictionRunsMillis}" />
+
+        <!-- 配置一个连接在池中最小生存的时间，单位是毫秒 -->
+        <property name="minEvictableIdleTimeMillis" value="${druid.minEvictableIdleTimeMillis}" />
+
+        <property name="validationQuery" value="${druid.validationQuery}" />
+        <property name="testWhileIdle" value="${druid.testWhileIdle}" />
+        <property name="testOnBorrow" value="${druid.testOnBorrow}" />
+        <property name="testOnReturn" value="${druid.testOnReturn}" />
+
+        <!-- 打开PSCache，并且指定每个连接上PSCache的大小 如果用Oracle，则把poolPreparedStatements配置为true，mysql可以配置为false。 -->
+        <property name="poolPreparedStatements" value="${druid.poolPreparedStatements}" />
+        <property name="maxPoolPreparedStatementPerConnectionSize" value="${druid.maxPoolPreparedStatementPerConnectionSize}" />
+
+        <!-- 通过别名的方式配置扩展插件，常用的插件有：监控统计用的filter:stat  日志用的filter:log4j   防御sql注入的filter:wall-->
+        <property name="filters" value="${druid.filters}" />
+    </bean>
+
+    <bean id="dataSourceProxy" class="org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy">
+        <property name="targetDataSource" ref="systemDataSource" />
+    </bean>
+
+
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSourceProxy" />
+    </bean>
+
+    <tx:advice id="sys_txAdvice" transaction-manager="transactionManager">
+        <tx:attributes>
+            <tx:method name="*" propagation="REQUIRED" isolation="READ_COMMITTED" read-only="false"/> <!--使用原有事务-->
+            <!-- <tx:method name="方法名" propagation="REQUIRES_NEW"/>  新开事务-->
+        </tx:attributes>
+    </tx:advice>
+
+    <!-- 事务切入点,注入事务属性    配置参与事务的类    那些类的哪些方法参与事务 -->
+    <aop:config expose-proxy="true" proxy-target-class="true">
+        <aop:pointcut id="sys_txPointcut" expression="execution(* com.fangjian.zhenbao..service.system..*+.*(..))" />
+        <aop:advisor advice-ref="sys_txAdvice" pointcut-ref="sys_txPointcut" />
+    </aop:config>
+
+
+    <!-- Spring 整合  Mybatis -->
+    <bean id="mySqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <!-- 数据源 -->
+        <property name="dataSource" ref="systemDataSource" />
+        <property name="configLocation" value="/WEB-INF/mybatis/mybatis-config.xml" />
+        <property name="mapperLocations" value="/WEB-INF/mybatis/mapper/*/*Mapper.xml" />
+    </bean>
+
+
+    <!-- system mybatis Dao -->
+    <bean id="systemBaseDao" class="com.fangjian.zhenbao.business.system.dao.SystemBaseDao">
+        <property name="sqlSessionFactory" ref="mySqlSessionFactory" />
+    </bean>
+
+    <!--<bean id="userDao" class="com.fangjian.zhenbao.business.system.dao.UserDao">
+        <property name="sqlSessionFactory" ref="mySqlSessionFactory" />
+    </bean>-->
+
+    <!--*************************************************************** system数据源 结束 ***************************************************************-->
+
+
+    <!--**************************************************配置freemarker 开始**************************************************-->
+    <!-- 自定义的freemarker标签 -->
+    <bean id="blockDirective" class="com.fangjian.zhenbao.base.freemarker.directive.BlockDirective" />
+    <bean id="extendsDirective" class="com.fangjian.zhenbao.base.freemarker.directive.ExtendsDirective" />
+    <bean id="overrideDirective" class="com.fangjian.zhenbao.base.freemarker.directive.OverrideDirective" />
+
+    <bean id="freemarkerConfig" class="org.springframework.web.servlet.view.freemarker.FreeMarkerConfigurer">
+        <property name="templateLoaderPaths">
+            <list>
+                <value>/WEB-INF/views/</value>
+            </list>
+        </property>
+
+        <property name="freemarkerSettings">
+            <props>
+                <prop key="template_update_delay">5</prop>
+                <prop key="defaultEncoding">UTF-8</prop>
+                <prop key="url_escaping_charset">UTF-8</prop>
+                <prop key="locale">zh_CN</prop>
+                <prop key="boolean_format">true,false</prop>
+                <prop key="datetime_format">yyyy-MM-dd HH:mm:ss</prop>
+                <prop key="date_format">yyyy-MM-dd</prop>
+                <prop key="time_format">HH:mm:ss</prop>
+                <prop key="number_format">0.######</prop>
+                <prop key="whitespace_stripping">true</prop>
+            </props>
+        </property>
+        <property name="freemarkerVariables">
+            <map>
+                <entry key="extends" value-ref="extendsDirective"></entry>
+                <entry key="override" value-ref="overrideDirective"></entry>
+                <entry key="block" value-ref="blockDirective"></entry>
+                <!-- freemarker全局变量 -->
+                <!-- <entry key="debug" value="${debug}"></entry> <entry key="pageTitle"
+                    value="${pageTitle}"></entry> <entry key="pageStyle" value="${pageStyle}"></entry> -->
+            </map>
+        </property>
+    </bean>
+    <!--**************************************************配置freemarker 结束**************************************************-->
+
+
+    <!-- 配置spring 的 email服务 -->
+    <bean id="JavaMailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
+        <property name="host" value="${mail.host}" />
+        <property name="username" value="${mail.username}" />
+        <property name="password" value="${mail.password}" />
+        <property name="defaultEncoding" value="UTF-8"></property>
+        <property name="javaMailProperties">
+            <props>
+                <prop key="mail.smtp.auth">${mail.smtp.auth}</prop>
+                <prop key="mail.smtp.timeout">${mail.smtp.timeout}</prop>
+                <!-- <prop key="mail.smtp.starttls.enable">true</prop> <prop key="mail.smtp.socketFactory.class">javax.net.ssl.SSLSocketFactory</prop>
+                    <prop key="mail.smtp.socketFactory.fallback">false</prop> -->
+            </props>
+        </property>
+    </bean>
+
+    <import resource="classpath:spring-config-shiro.xml" />
+    <import resource="classpath:spring-config-springCache.xml" />
+</beans>

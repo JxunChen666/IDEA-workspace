@@ -1,0 +1,54 @@
+body{
+	font-family: 微软雅黑;
+}
+.widget-main .itemdiv .text font{
+	color: #f96;
+	margin: 0 2px;
+}
+.widget-main .itemdiv .tools{
+	color: gray;
+}
+.widget-main .itemdiv .tools a{
+    margin-right: 24px;
+    cursor: pointer;
+}
+.checkdiv{
+	height: 34px;
+	padding:4px;
+	margin-top: 4px;
+	border: 1px dotted #ddd;
+}
+.checkdiv .text{
+	display:inline-block;
+	width:50%;
+	font-size: 14px;
+	color: #333;
+}
+.checkdiv img{
+	width: 40px;
+	height: 18px;
+}
+.checkdiv .tip{
+	color: #999;
+	margin-left: 4px;
+}
+.tiptext{
+	vertical-align: middle;	
+	margin-left: 4px;
+}
+.checkdiv i{
+	vertical-align: middle;
+}
+h3{
+	color: #c96;
+}
+h3 span{
+	color: #666;
+}
+#pushnews{
+	width: 100%;
+	border-radius:2px;
+}
+.itemdiv.dialogdiv>.body{
+	padding-bottom: 20px;
+}

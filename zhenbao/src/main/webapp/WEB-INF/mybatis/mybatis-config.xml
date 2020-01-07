@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+    <settings>
+        <setting name="cacheEnabled" value="true"/>
+        <setting name="lazyLoadingEnabled" value="false"/>
+        <!--字段没有值我们应该将字段返回，否则前端在取值的时候会报NullPointerException，这是因为在用mybatis时没有用实体作为返回（用的是Map）
+            因此出现了在返回参数为null的时候 不会返回字段。<setting name="callSettersOnNulls" value="true"/>-->
+        <setting name="callSettersOnNulls" value="true"/>
+        <!--这样就不用对数据库返回字段跟javabean进行映射配置了-->
+        <setting name="mapUnderscoreToCamelCase" value="true"/>
+    </settings>
+
+    <typeAliases>
+        <typeAlias type="com.fangjian.zhenbao.business.system.entity.User" alias="user"/>
+        <typeAlias type="com.fangjian.zhenbao.business.system.entity.Role" alias="role"/>
+        <typeAlias type="com.fangjian.zhenbao.business.system.entity.Resource" alias="resource"/>
+        <typeAlias type="com.fangjian.zhenbao.business.system.entity.SysLog" alias="syslog"/>
+    </typeAliases>
+
+    <typeHandlers>
+    </typeHandlers>
+</configuration>

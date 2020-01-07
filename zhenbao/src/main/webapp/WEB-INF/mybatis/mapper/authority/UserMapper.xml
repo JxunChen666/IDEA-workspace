@@ -1,0 +1,335 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="UserMapper">
+    <resultMap id="BaseResultMap" type="user">
+        <id property="id" column="id"/>
+        <result property="organizationId" column="organizationId"/>
+        <result property="username" column="username"/>
+        <result property="password" column="password"/>
+        <result property="salt" column="salt"/>
+        <result property="roleIdsStr" column="role_ids"/>
+        <result property="locked" column="locked"/>
+        <result property="name" column="name"/>
+        <result property="email" column="email"/>
+        <result property="phone" column="phone"/>
+        <result property="emergency_phone" column="emergency_phone"/>
+        <result property="time" column="time"/>
+        <result property="cityCode" column="city_code"/>
+        <result column="create_user" property="createUser" jdbcType="VARCHAR"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="update_user" property="updateUser" jdbcType="VARCHAR"/>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, organization_id, username, password, salt, role_ids, locked, name, email, phone,
+        emergency_phone, time, city_code
+    </sql>
+
+    <select id="getUserByCondition" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from sys_user
+        <include refid="queryCondition"/>
+        order by ${sort} ${order}
+        limit #{start}, #{pageSize}
+    </select>
+
+    <select id="getUserListByStation" resultMap="BaseResultMap">
+        SELECT NAME,id
+        FROM sys_user
+        WHERE city_code=#{cityCode} AND organization_id=#{customer} AND role_ids=#{roleIds}
+    </select>
+
+    <select id="getUserListNoDevice" resultMap="BaseResultMap">
+        SELECT NAME,id
+        FROM sys_user
+        WHERE city_code=#{cityCode} AND organization_id=#{customer} AND role_ids=#{roleIds} AND id
+        NOT IN (SELECT u.id FROM sys_user u,app_base_car c
+        WHERE u.city_code=#{cityCode} AND u.organization_id=#{customer} AND role_ids=#{roleIds} AND c.car_user_id=u.id)
+    </select>
+
+    <select id="getUserByCityCode" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select username from sys_user where city_code=#{cityCode}
+    </select>
+
+    <sql id="queryCondition">
+        <trim prefix="WHERE" prefixOverrides="AND |OR ">
+            <if test="name != null">
+                <![CDATA[ AND name like CONCAT('%',#{name},'%')]]>
+            </if>
+            <if test="phone != null">
+                <![CDATA[ AND phone like '%${phone}%']]>
+            </if>
+            <![CDATA[ AND city_code = #{cityCode}]]>
+            <![CDATA[ AND role_ids = #{roleIds}]]>
+            <![CDATA[ AND organization_id = #{customer}]]>
+        </trim>
+    </sql>
+
+
+
+    <select id="getCountByCondition" resultType="long">
+        select count(name)
+        from sys_user
+        <include refid="queryCondition"/>
+    </select>
+
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer">
+        select
+        <include refid="Base_Column_List"/>
+        from sys_user
+        where id = #{id,jdbcType=INTEGER}
+    </select>
+
+    <!--严重注意角色role_ids与roleIdsStr  严重注意角色role_ids与roleIdsStr-->
+    <insert id="insertSelective" parameterType="user">
+        insert into sys_user
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                id,
+            </if>
+            <if test="organizationId != null">
+                organization_id,
+            </if>
+            <if test="username != null">
+                username,
+            </if>
+            <if test="password != null">
+                password,
+            </if>
+            <if test="salt != null">
+                salt,
+            </if>
+            <if test="roleIdsStr != null">
+                role_ids,
+            </if>
+            <if test="locked != null">
+                locked,
+            </if>
+            <if test="name != null">
+                name,
+            </if>
+            <if test="email != null">
+                email,
+            </if>
+            <if test="phone != null">
+                phone,
+            </if>
+            <if test="emergency_phone != null">
+                emergency_phone,
+            </if>
+            <if test="time != null">
+                time,
+            </if>
+            <if test="cityCode != null">
+                city_code,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                #{id,jdbcType=INTEGER},
+            </if>
+            <if test="organizationId != null">
+                #{organizationId,jdbcType=BIGINT},
+            </if>
+            <if test="username != null">
+                #{username,jdbcType=VARCHAR},
+            </if>
+            <if test="password != null">
+                #{password,jdbcType=VARCHAR},
+            </if>
+            <if test="salt != null">
+                #{salt,jdbcType=VARCHAR},
+            </if>
+            <if test="roleIdsStr != null">
+                #{roleIdsStr,jdbcType=VARCHAR},
+            </if>
+            <if test="locked != null">
+                #{locked,jdbcType=BIT},
+            </if>
+            <if test="name != null">
+                #{name,jdbcType=VARCHAR},
+            </if>
+            <if test="email != null">
+                #{email,jdbcType=VARCHAR},
+            </if>
+            <if test="phone != null">
+                #{phone,jdbcType=VARCHAR},
+            </if>
+            <if test="emergency_phone != null">
+                #{emergency_phone,jdbcType=VARCHAR},
+            </if>
+            <if test="time != null">
+                #{time,jdbcType=TIMESTAMP},
+            </if>
+            <if test="cityCode != null">
+                #{cityCode,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+
+    <!--严重注意去掉角色字段不修改-->
+    <update id="updateByPrimaryKeySelective" parameterType="user">
+        update sys_user
+        <set>
+            <if test="organizationId != null">
+                organization_id = #{organizationId,jdbcType=BIGINT},
+            </if>
+            <if test="username != null">
+                username = #{username,jdbcType=VARCHAR},
+            </if>
+            <if test="password != null">
+                password = #{password,jdbcType=VARCHAR},
+            </if>
+            <if test="salt != null">
+                salt = #{salt,jdbcType=VARCHAR},
+            </if>
+            <if test="locked != null">
+                locked = #{locked,jdbcType=BIT},
+            </if>
+            <if test="name != null">
+                name = #{name,jdbcType=VARCHAR},
+            </if>
+            <if test="email != null">
+                email = #{email,jdbcType=VARCHAR},
+            </if>
+            <if test="phone != null">
+                phone = #{phone,jdbcType=VARCHAR},
+            </if>
+            <if test="emergency_phone != null">
+                emergency_phone = #{emergency_phone,jdbcType=VARCHAR},
+            </if>
+            <if test="time != null">
+                time = #{time,jdbcType=TIMESTAMP},
+            </if>
+            <if test="cityCode != null">
+                city_code = #{cityCode,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where id = #{id,jdbcType=INTEGER}
+    </update>
+
+
+    <!-- 查询条件 -->
+    <sql id="queryDynSql">
+        <trim prefix="WHERE" prefixOverrides="AND |OR ">
+            <if test="id != null">
+                <![CDATA[ AND a.id = #{id}]]>
+            </if>
+            <if test="username != null">
+                <![CDATA[ AND a.username like '%${username}%']]>
+            </if>
+            <if test="locked != null">
+                <![CDATA[ AND a.locked =#{locked}]]>
+            </if>
+
+        </trim>
+    </sql>
+
+    <!-- 分页 -->
+    <select id="getByPage" resultMap="BaseResultMap">
+        <![CDATA[
+ 		SELECT * FROM sys_user  a 
+        ]]>
+        <include refid="queryDynSql"/>
+        <![CDATA[
+ 		  limit  #{start}, #{pageSize}
+        ]]>
+    </select>
+    <!-- 根据条件返回总数 -->
+    <select id="getCount" parameterType="map" resultType="long">
+        <![CDATA[
+	 select count(*) from sys_user a 
+	]]>
+        <include refid="queryDynSql"/>
+    </select>
+
+    <!-- 添加用户 -->
+    <insert id="addUser" parameterType="user" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into sys_user(organization_id,
+        username,password,salt,role_ids,
+        locked,name,email,phone,emergency_phone,time,city_code,create_user,create_time)
+        values(1,#{username},#{password},#{salt},#{roleIdsStr},0,#{name},#{email},#{phone},#{emergency_phone},NOW(),#{cityCode},#{createUser},now())
+    </insert>
+
+    <!-- 通过用户名查找用户 -->
+    <select id="findUserByUsername" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select * from sys_user where username=#{username}
+    </select>
+
+    <!-- 通过ID查找用户 -->
+    <select id="findUserByID" parameterType="java.lang.Long"
+            resultMap="BaseResultMap">
+        select * from sys_user where id=#{id}
+    </select>
+
+    <!-- 删除用户 -->
+    <update id="deleteUser">
+        UPDATE sys_user
+        <set>
+            <if test="locked != null">
+                locked = #{locked},
+            </if>
+        </set>
+        WHERE id = #{id}
+    </update>
+    <!-- 更新用户 -->
+    <update id="updateUser" parameterType="user">
+        UPDATE sys_user
+        <set>
+            <if test="email != null">
+                email = #{email},
+            </if>
+            <if test="name != null">
+                name = #{name},
+            </if>
+            <if test="phone != null">
+                phone = #{phone},
+            </if>
+
+            <if test="emergency_phone != null">
+                emergency_phone = #{emergency_phone},
+            </if>
+
+            <if test="roleIdsStr != null">
+                role_ids = #{roleIdsStr},
+            </if>
+
+            <if test="cityCode != null">
+                city_code = #{cityCode},
+            </if>
+
+            <if test="updateUser != null">
+                update_user = #{updateUser},
+            </if>
+            update_time = now()
+        </set>
+        WHERE username = #{username}
+    </update>
+    <!-- 密码重置 -->
+    <update id="passwordReset" parameterType="user">
+        UPDATE sys_user
+        <set>
+            <if test="password != null">
+                password = #{password},
+            </if>
+            <if test="salt != null">
+                salt = #{salt},
+            </if>
+        </set>
+        WHERE username = #{username}
+    </update>
+    <!-- 根据citycode获取所有用户 -->
+    <select id="getAllByCityCode" parameterType="String" resultMap="BaseResultMap">
+	SELECT a.* FROM sys_user a 
+	</select>
+
+    <!-- 根据citycode获取所有用户 -->
+    <select id="getUserNameByCityCode" parameterType="String" resultMap="BaseResultMap">
+	SELECT a.* FROM sys_user a WHERE a.city_code=#{cityCode}
+	</select>
+</mapper>

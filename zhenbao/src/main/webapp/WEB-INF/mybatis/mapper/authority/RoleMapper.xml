@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="RoleMapper">
+	 <resultMap id="BaseResultMap" type="role">
+        <id property="id" column="id"/>
+        <result property="role" column="role"/>
+        <result property="description" column="description"/>
+        <result property="resourceIdsStr" column="resource_ids"/>
+        <result property="available" column="available"/>
+        <result property="weight" column="weight"/>
+		<result column="create_user" property="createUser" jdbcType="VARCHAR" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="update_user" property="updateUser" jdbcType="VARCHAR" />
+		<result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+    </resultMap>
+    
+    <!-- 查询条件 -->
+	<sql id="queryDynSql">
+		<trim prefix="WHERE" prefixOverrides="AND |OR ">
+			<if test="id != null">
+	    			  <![CDATA[ AND a.id = #{id}]]>
+			</if>
+			<if test="description != null">
+	    			  <![CDATA[ AND a.description like '%${description}%']]>
+			</if>
+
+		</trim>
+	</sql>
+	
+	<!-- 分页 -->
+	<select id="getByPage" resultMap="BaseResultMap">
+	    <![CDATA[
+ 		SELECT * FROM sys_role  a 
+        ]]>
+		<include refid="queryDynSql" />
+		  <![CDATA[
+ 		  limit  #{start}, #{pageSize}
+        ]]>
+	</select>
+	<!-- 根据条件返回总数 -->
+	<select id="getCount" parameterType="map" resultType="long">
+     <![CDATA[
+	 select count(*) from sys_role a 
+	]]>
+		<include refid="queryDynSql" />
+	</select>
+	
+	 <!-- 添加角色 -->
+    <insert id="addRole" parameterType="role" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into
+        sys_role(role,description,resource_ids,available,create_user,create_time)
+        values(#{role},#{description},#{resourceIdsStr},1,#{createUser},now())
+    </insert>
+
+    <!-- 通过角色名查找角色 -->
+    <select id="findRoleByName" parameterType="java.lang.String"
+            resultMap="BaseResultMap">
+        select * from sys_role where role=#{rolename}
+    </select>
+ <!-- 通过ID查找用户 -->
+    <select id="findRoleByID" parameterType="java.lang.Long"
+            resultMap="BaseResultMap">
+        select * from sys_role where id=#{id}
+    </select>
+
+    <!-- 通过IDs查找用户 -->
+    <select id="findRoleByIDs" resultMap="BaseResultMap">
+        select * from sys_role where id in
+        <foreach item="roleIds" index="index" collection="array" open="("
+                 separator="," close=")">
+            #{roleIds}
+        </foreach>
+    </select>
+
+    <!-- 删除角色 -->
+    <delete id="deleteRole" parameterType="java.lang.Long">
+        delete from sys_role where
+        id=#{id}
+    </delete>
+<!-- 根据角色名更新角色 -->
+    <update id="updateRole" parameterType="role">
+        UPDATE sys_role
+        <set>
+            <if test="description != null">
+                description = #{description},
+            </if>
+            <if test="resourceIdsStr != null">
+                resource_ids = #{resourceIdsStr},
+            </if>
+            <if test="updateUser != null">
+                update_user = #{updateUser},
+            </if>
+            update_time = now()
+        </set>
+        WHERE role = #{role}
+    </update>
+	
+</mapper>

@@ -1,0 +1,27 @@
+﻿<html>
+<head>
+<link rel="stylesheet" type="text/css" href="select2-bootstrap.css" />
+<link rel="stylesheet" type="text/css" href="select2.css" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>select2 example</title>
+<script type="text/javascript" src="jquery-2.0.3.min.js"></script>
+<script src="select2.min.js"></script>
+
+
+</head>
+
+<body>
+   <input type="hidden" id="txt_tag" name="txt_tag" class="select2" style="width:300px"/>
+</body>
+      
+
+<script>
+$("#txt_tag").select2({
+    multiple: 'multiple',
+    data: [{id:0,text:'enhancement'},{id:1,text:'bug'},{id:2,text:'duplicate'},{id:3,text:'invalid'},{id:4,text:'wontfix'}]
+});
+
+var data = [{id:1,text:'enhancement'}];
+$("#txt_tag").select2('data',data);
+</script>
+</html>

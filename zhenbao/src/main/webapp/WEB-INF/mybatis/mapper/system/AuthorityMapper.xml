@@ -1,0 +1,410 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="AuthorityMapper">
+
+    <resultMap id="user" type="user">
+        <id property="id" column="id"/>
+        <result property="organizationId" column="organization_id"/>
+        <result property="username" column="username"/>
+        <result property="password" column="password"/>
+        <result property="salt" column="salt"/>
+        <result property="roleIdsStr" column="role_ids"/>
+        <result property="locked" column="locked"/>
+        <result property="name" column="name"/>
+        <result property="email" column="email"/>
+        <result property="phone" column="phone"/>
+        <result property="emergency_phone" column="emergency_phone"/>
+        <result property="time" column="time"/>
+        <result property="cityCode" column="city_code"/>
+    </resultMap>
+    
+    <resultMap id="role" type="role">
+        <id property="id" column="id"/>
+        <result property="role" column="role"/>
+        <result property="description" column="description"/>
+        <result property="resourceIdsStr" column="resource_ids"/>
+        <result property="available" column="available"/>
+        <result property="weight" column="weight"/>
+    </resultMap>
+
+    <resultMap id="resource" type="resource">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="type" column="type"/>
+        <result property="url" column="url"/>
+        <result property="permission" column="permission"/>
+        <result property="parentId" column="parent_id"/>
+        <result property="parentIds" column="parent_ids"/>
+        <result property="available" column="available"/>
+        <result property="icon" column="icon"/>
+        <result property="weight" column="weight"/>
+    </resultMap>
+
+    <resultMap id="syslog" type="syslog">
+        <result property="username" column="username"/>
+        <result property="ip" column="ip"/>
+        <result property="methodname" column="methodname"/>
+        <result property="remark" column="remark"/>
+        <result property="stat_date" column="stat_date"/>
+        <result property="time" column="time"/>
+    </resultMap>
+
+
+    <!-- ********************************** 用 户 管 理******************************************************** -->
+
+    <!-- 查找所有用户 -->
+    <select id="findAllUsers" resultMap="user">
+        select
+        id,username,password,salt,locked,role_ids,name,email,phone,emergency_phone,time
+        from sys_user
+    </select>
+
+    <!-- 添加用户 -->
+    <insert id="addUser" parameterType="user" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into sys_user(organization_id,
+        username,password,salt,role_ids,
+        locked,name,email,phone,emergency_phone,time)
+        values(1,#{username},#{password},#{salt},#{roleIdsStr},0,#{name},#{email},#{phone},#{emergency_phone},NOW())
+    </insert>
+
+    <sql id="Base_Column_List" >
+        id, organization_id, username, password, salt, role_ids, locked, name, email, phone,
+        emergency_phone, time, city_code
+    </sql>
+
+    <!-- 通过用户名查找用户 -->
+    <select id="findUserByUsername" parameterType="java.lang.String"
+            resultMap="user">
+        select <include refid="Base_Column_List"/> from sys_user where username=#{username}
+    </select>
+
+    <!-- 通过ID查找用户 -->
+    <select id="findUserByID" parameterType="java.lang.Long"
+            resultMap="user">
+        select * from sys_user where id=#{id}
+    </select>
+
+    <!-- 删除用户 -->
+    <delete id="deleteUser" parameterType="java.lang.Long">
+        delete from sys_user where
+        id=#{id}
+    </delete>
+
+    <!-- 更新用户 -->
+    <update id="updateUser" parameterType="user">
+        UPDATE sys_user
+        <set>
+            <if test="email != null">
+                email = #{email},
+            </if>
+            <if test="name != null">
+                name = #{name},
+            </if>
+            <if test="phone != null">
+                phone = #{phone},
+            </if>
+
+            <if test="emergency_phone != null">
+                emergency_phone = #{emergency_phone},
+            </if>
+
+            <if test="roleIdsStr != null">
+                role_ids = #{roleIdsStr},
+            </if>
+        </set>
+        WHERE username = #{username}
+    </update>
+
+    <!-- ********************************** 角 色 管 理******************************************************** -->
+
+    <!-- 查找所有角色 -->
+    <select id="findAllRoles" resultMap="role">
+        SELECT * FROM sys_role
+    </select>
+
+    <!-- 添加角色 -->
+    <insert id="addRole" parameterType="role" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into
+        sys_role(role,description,resource_ids,available)
+        values(#{role},#{description},#{resourceIdsStr},1)
+    </insert>
+
+    <!-- 通过角色名查找角色 -->
+    <select id="findRoleByName" parameterType="java.lang.String"
+            resultMap="role">
+        select * from sys_role where role=#{rolename}
+    </select>
+
+    <!-- 通过ID查找用户 -->
+    <select id="findRoleByID" parameterType="java.lang.Long"
+            resultMap="role">
+        select * from sys_role where id=#{id}
+    </select>
+
+    <!-- 通过IDs查找用户 -->
+    <select id="findRoleByIDs" resultMap="role">
+        select * from sys_role where id in
+        <foreach item="roleIds" index="index" collection="array" open="("
+                 separator="," close=")">
+            #{roleIds}
+        </foreach>
+    </select>
+
+    <!-- 删除角色 -->
+    <delete id="deleteRole" parameterType="java.lang.Long">
+        delete from sys_role where
+        id=#{id}
+    </delete>
+
+    <!-- 更新用户 -->
+    <update id="updateRole" parameterType="role">
+        UPDATE sys_role
+        <set>
+            <if test="description != null">
+                description = #{description},
+            </if>
+            <if test="resourceIdsStr != null">
+                resource_ids = #{resourceIdsStr},
+            </if>
+        </set>
+        WHERE role = #{role}
+    </update>
+
+    <!-- ********************************** 资 源 管 理******************************************************** -->
+
+    <!-- 查找所有资源 -->
+    <select id="findAllResource" resultMap="resource">
+        select * from
+        sys_resource
+        order by concat(parent_ids, id) asc
+    </select>
+
+    <!-- 根据id查找资源 -->
+    <select id="findOneResource" parameterType="java.lang.Long"
+            resultMap="resource">
+        select * from sys_resource where id=#{parentId}
+    </select>
+
+    <!-- 根据ids查找资源 -->
+    <select id="findOneResources" resultMap="resource">
+        select * from sys_resource where available=1 and id in
+        <foreach item="parentIds" index="index" collection="array"
+                 open="(" separator="," close=")">
+            #{parentIds}
+        </foreach>
+    </select>
+
+    <!-- 添加资源 -->
+    <insert id="createResource" parameterType="resource">
+        INSERT INTO
+        sys_resource(name, type, url, permission, parent_id, parent_ids,
+        available,icon,weight)
+        values(#{name},#{type},#{url},#{permission},#{parentId},#{parentIds},1,#{icon},#{weight})
+    </insert>
+
+    <!-- 更新资源 -->
+    <update id="updateResource" parameterType="resource">
+        update sys_resource
+        set name=#{name}, type=#{type}, url=#{url},
+        permission=#{permission},
+        parent_id=#{parentId},
+        parent_ids=#{parentIds},icon=#{icon},weight=#{weight} where
+        id=#{id}
+
+    </update>
+
+    <!-- 删除资源 -->
+    <delete id="delResource" parameterType="java.lang.Long">
+        delete from sys_resource
+        where id=#{id}
+    </delete>
+
+    <!-- 删除child资源 -->
+    <delete id="delChildResource" parameterType="java.lang.Long">
+        delete from
+        sys_resource where parent_ids like CONCAT('%',#{id},'%')
+    </delete>
+
+    <!-- 根据url查找资源 -->
+    <select id="findResourceByUrl" parameterType="java.util.Set"
+            resultMap="resource">
+        select * from sys_resource where type='menu' and available=1 and url in
+        <foreach collection="array" index="index" item="item" open="("
+                 separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+
+    <!-- 根据父节点id查找子资源 -->
+    <select id="findResourceByParentId" parameterType="java.lang.Long"
+            resultMap="resource">
+        SELECT * FROM `sys_resource` WHERE parent_id=#{parent_id} and available=1 order by weight desc
+    </select>
+
+    <!-- 记录系统日志 -->
+    <insert id="createSysLog" parameterType="syslog">
+        insert into
+        sys_syslog(stat_date,time,username,ip,methodname,remark)
+        values(#{stat_date},#{time},#{username},#{ip},#{methodname},#{remark})
+    </insert>
+
+    <!-- 通过日期查询系统日志 -->
+    <select id="findSysLogByDate" parameterType="java.lang.String"
+            resultMap="syslog">
+        select * from sys_syslog where stat_date=#{date}
+    </select>
+
+    <!-- ********************************** 账 号 管 理************************************ -->
+
+    <resultMap id="district" type="com.fangjian.zhenbao.business.huabo.entity.District">
+        <id column="dis_id" jdbcType="INTEGER" property="disId" />
+        <result column="dis_parent_id" jdbcType="INTEGER" property="disParentId" />
+        <result column="dis_name" jdbcType="VARCHAR" property="disName" />
+        <result column="dis_simple_name" jdbcType="VARCHAR" property="disSimpleName" />
+        <result column="dis_level" jdbcType="TINYINT" property="disLevel" />
+    </resultMap>
+
+
+    <sql id="Base_District_List">
+        dis_id,dis_parent_id,dis_name,dis_simple_name,dis_level
+    </sql>
+
+    <sql id="districtCondition">
+        <trim prefix="WHERE" prefixOverrides="AND |OR ">
+            <if test="disName != null and disName !=''">
+                <![CDATA[ AND dis_name like CONCAT('%',#{disName},'%')]]>
+            </if>
+            <if test="disSimpleName != null and disSimpleName !=''">
+                <![CDATA[ AND dis_simple_name like CONCAT('%',#{disSimpleName},'%')]]>
+            </if>
+        </trim>
+    </sql>
+
+    <sql id="districtDuplicate">
+        <trim prefix="WHERE" prefixOverrides="AND |OR ">
+            <if test="disName != null and disName !=''">
+                <![CDATA[ AND dis_name = #{disName}]]>
+            </if>
+            <if test="disSimpleName != null and disSimpleName !=''">
+                <![CDATA[ AND dis_simple_name = #{disSimpleName}]]>
+            </if>
+        </trim>
+    </sql>
+
+    <!--查找所有省份+多条件查询+分页-->
+    <select id="districtPage" resultMap="district">
+        select
+        <include refid="Base_District_List"/>
+        from app_base_district
+        <include refid="districtCondition"/>
+        order by #{sort},#{order}
+        limit #{start},#{pageSize}
+    </select>
+
+    <!--查找省份总记录数-->
+    <select id="getDistrictCount" resultType="long">
+        select count(1)
+        from app_base_district
+        <include refid="districtCondition"/>
+    </select>
+
+    <!--根据主键id查找省份-->
+    <select id="findDistrictById" resultMap="district" parameterType="java.lang.Integer">
+        select
+        <include refid="Base_District_List"/>
+        from app_base_district
+        where dis_id = #{id,jdbcType=INTEGER}
+    </select>
+
+    <!-- 通过省份名称查找省份 -->
+    <select id="findDisName"  resultMap="district">
+        select
+        <include refid="Base_District_List"/>
+        from app_base_district
+        <include refid="districtDuplicate"/>
+    </select>
+
+    <!-- 添加省份 -->
+    <insert id="insertDistrict" parameterType="com.fangjian.zhenbao.business.huabo.entity.District">
+        INSERT INTO
+        app_base_district(dis_parent_id,dis_name,dis_simple_name,dis_level)
+        values(0,#{disName},#{disSimpleName},#{disLevel})
+    </insert>
+
+    <!--修改省份-->
+    <update id="updateDistrict" parameterType="com.fangjian.zhenbao.business.huabo.entity.District">
+        update app_base_district
+        <set>
+            <if test="disParentId != null">
+                dis_parent_id = 0,
+            </if>
+            <if test="disName != null">
+                dis_name = #{disName,jdbcType=VARCHAR},
+            </if>
+            <if test="disSimpleName != null">
+                dis_simple_name = #{disSimpleName,jdbcType=VARCHAR},
+            </if>
+            <if test="disLevel != null">
+                dis_level = #{disLevel,jdbcType=TINYINT},
+            </if>
+        </set>
+        where dis_id = #{disId,jdbcType=INTEGER}
+    </update>
+
+    <!--删除省份-->
+    <delete id="deleteDistrict" parameterType="java.lang.Integer">
+        delete from app_base_district
+        where dis_id = #{id,jdbcType=INTEGER}
+    </delete>
+
+
+    <!-- ********************************** 反 馈 管 理************************************ -->
+
+
+    <resultMap id="Question" type="com.fangjian.zhenbao.business.huabo.entity.Question">
+        <id column="que_id" jdbcType="INTEGER" property="queId" />
+        <result column="que_user_id" jdbcType="INTEGER" property="queUserId" />
+        <result column="que_posttime" property="quePosttime" />
+        <result column="link_style" jdbcType="VARCHAR" property="linkStyle" />
+        <result column="customer" jdbcType="INTEGER" property="customer" />
+    </resultMap>
+
+    <sql id="Base_Question_List">
+        que_id,que_user_id,que_info,que_posttime,link_style,q.customer
+    </sql>
+
+    <sql id="questionCondition">
+        <trim prefix="WHERE" prefixOverrides="AND |OR ">
+            <if test="quePosttime != null and quePosttime !=''">
+                <![CDATA[ AND que_posttime =#{quePosttime}]]>
+            </if>
+            <if test="queInfo != null and queInfo !=''">
+                <![CDATA[ AND que_info like CONCAT('%',#{queInfo},'%')]]>
+            </if>
+            <![CDATA[ AND q.customer = #{customer}]]>
+        </trim>
+    </sql>
+
+    <!--查找反馈总记录数-->
+    <select id="getQuestionCount" resultType="long">
+        select count(1)
+        from app_base_question q
+        left join app_base_user u on u.user_id=q.que_user_id
+        <include refid="questionCondition"/>
+    </select>
+
+    <!--根据用户查找所有反馈信息+多条件查询+分页-->
+    <select id="questionPage" resultMap="Question">
+        select
+        *
+        from  app_base_question q
+        left join app_base_user u on u.user_id=q.que_user_id
+        <include refid="questionCondition"/>
+        order by #{sort},#{order}
+        limit #{start},#{pageSize}
+    </select>
+</mapper>

@@ -1,0 +1,14 @@
+
+#result{
+	position: relative;
+}
+
+.leftTable {
+	position:absolute;
+	left:0;
+	width:100px
+}
+
+.rightTable {
+	padding-left:100px;
+}

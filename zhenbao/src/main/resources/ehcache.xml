@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ehcache name="es">
+
+    <!--
+       磁盘存储:将缓存中暂时不使用的对象,转移到硬盘,类似于Windows系统的虚拟内存
+       path:指定在硬盘上存储对象的路径
+    -->
+    <diskStore path="java.io.tmpdir"/>
+
+    <!-- 登录记录缓存 锁定60分钟 -->
+    <cache name="passwordRetryCache"
+           maxEntriesLocalHeap="2000"
+           eternal="false"
+           timeToIdleSeconds="36000"
+           timeToLiveSeconds="72000"
+           overflowToDisk="false"
+           statistics="true">
+    </cache>
+
+    <!--认证的缓存策略-->
+    <cache name="authenticationCache"
+           maxEntriesLocalHeap="2000"
+           eternal="false"
+           timeToIdleSeconds="36000"
+           timeToLiveSeconds="72000"
+           overflowToDisk="false"
+           statistics="true">
+    </cache>
+
+    <!--授权的缓存策略-->
+    <cache name="authorizationCache"
+           maxEntriesLocalHeap="2000"
+           eternal="false"
+           timeToIdleSeconds="36000"
+           timeToLiveSeconds="72000"
+           overflowToDisk="false"
+           statistics="true">
+    </cache>
+
+    <!--shiro 的session会话管理的缓存-->
+    <cache name="shiro-activeSessionCache"
+           maxEntriesLocalHeap="2000"
+           eternal="false"
+           timeToIdleSeconds="36000"
+           timeToLiveSeconds="72000"
+           overflowToDisk="false"
+           statistics="true">
+    </cache>
+
+</ehcache>

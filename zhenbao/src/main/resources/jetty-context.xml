@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>  
+<!DOCTYPE Configure PUBLIC "-//Mort Bay Consulting//DTD Configure//EN" "http://www.eclipse.org/jetty/configure.dtd">  
+<Configure class="org.eclipse.jetty.webapp.WebAppContext">
+    <!--上传的限制设置 图片的大小，url长度等等-->
+    <Set name="maxFormContentSize" type="int">600000</Set>
+    <Call name="setAttribute">  
+        <Arg>org.eclipse.jetty.server.webapp.WebInfIncludeJarPattern</Arg>  
+        <Arg>.*/.*jsp-api-[^/]\.jar$|./.*jsp-[^/]\.jar$|./.*taglibs[^/]*\.jar$</Arg>  
+    </Call>
+
+    <!---1表示不限制，2000000表示2MB的限制范围。-->
+    <Call class="java.lang.System" name="setProperty">
+        <Arg>org.eclipse.jetty.server.Request.maxFormContentSize</Arg>
+        <Arg>-1</Arg>
+    </Call>
+</Configure>  

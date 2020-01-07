@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--status用来指定log4j本身的打印日志的级别-->
+<!--monitorinterval用于指定log4j自动重新配置的监测间隔时间，单位是s,最小是5s-->
+<Configuration status="WARN" monitorInterval="1800">
+    <properties>
+        <property name="LOG_HOME">/usr/local/tomcat7-9999/webapps</property>
+        <property name="FILE_NAME">zhenbao-web</property>
+    </properties>
+
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n" />
+        </Console>
+
+        <RollingFile name="running-log" fileName="${LOG_HOME}/${FILE_NAME}.log"
+                     filePattern="${LOG_HOME}/$${date:yyyy-MM}/${FILE_NAME}-%d{yyyy-MM-dd}-%i.log.gz"
+                     immediateFlush="true">
+            <PatternLayout pattern="%date{yyyy-MM-dd HH:mm:ss} %level [%thread][%file:%line] - %msg%n" />
+            <Policies>
+                <TimeBasedTriggeringPolicy />
+                <SizeBasedTriggeringPolicy size="50MB" />
+            </Policies>
+            <DefaultRolloverStrategy max="20" />
+        </RollingFile>
+    </Appenders>
+
+    <Loggers>
+       <!--对应上面配置的File日志-->
+       <!-- <Logger name="AsyncFileLogger" level="trace" additivity="true">
+            <AppenderRef ref="AsyncAppender" />
+        </Logger>-->
+
+        <Root level="info">
+            <!-- 这里是输入到文件，很重要-->
+            <AppenderRef ref="running-log" level="Warn"/>
+            <!-- 这里是输入到控制台-->
+            <AppenderRef ref="Console" level="Warn"/>
+        </Root>
+    </Loggers>
+</Configuration>

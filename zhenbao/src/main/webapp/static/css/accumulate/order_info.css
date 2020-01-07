@@ -1,0 +1,76 @@
+body {
+	font-family: "microsoft yahei", "Helvetica Neue", Helvetica, STHeiTi, sans-serif;
+}
+
+.outer_border {
+	border-color: #DDD;
+	border-width: 2px;
+	border-style: solid;
+	padding: 5px 10px;
+	width: 500px;
+}
+
+.category_name {
+	display: inline-block;
+	width: 38%;
+	font-size: 16px;
+	font-weight: bold;
+	color: #333333;
+}
+
+.value_name {
+	display: inline-block;
+	width: 60%;
+	font-size: 17px !important;
+	font-weight: bold;
+	color: #888888;
+}
+
+.expressArea {
+	display: block;
+	width: 100%;
+	margin-top: 5px;
+	border: solid #ddd 1px;
+}
+
+.savebtn {
+	display: block;
+	width: 100%;
+	background: #000;
+	border: none;
+	padding: 5px;
+	font-size: 18px;
+	color: white;
+	margin-top: 10px;
+}
+
+.savebtn : hover {
+	background: #222;
+}
+
+.savebtn : active {
+	background: #333;
+}
+
+p {
+	margin: 5px 0px;
+	margin-bottom: 20px;
+}
+
+.status_a {
+	border: solid gray 1px;
+}
+
+#step1_a {
+	font-size: 12;
+}
+
+.styled-select select {
+   background: transparent;
+   width: 268px;
+   padding: 5px;
+   font-size: 16px;
+   border: 1px solid #ccc;
+   height: 34px;
+   -webkit-appearance: none; /*for chrome*/
+}
