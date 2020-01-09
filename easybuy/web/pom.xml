@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>com.eb</groupId>
+		<artifactId>easybuy</artifactId>
+		<version>0.0.1-SNAPSHOT</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
+	<groupId>com.eb</groupId>
+	<artifactId>web</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+    <packaging>jar</packaging>
+
+	<properties>
+		<java.version>1.8</java.version>
+	</properties>
+
+
+	<dependencies>
+		<!--web模块 引入entity模块-->
+		<!--<dependency>
+			<groupId>com.eb</groupId>
+			<artifactId>entity</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>-->
+		<!--web模块 引入service模块-->
+		<!--<dependency>
+			<groupId>com.eb</groupId>
+			<artifactId>services</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>-->
+		<!--web模块 引入controllers模块-->
+		<dependency>
+			<groupId>com.eb</groupId>
+			<artifactId>controllers</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+	</dependencies>
+
+
+
+	<build>
+		<!--<resources>
+			<resource>
+				<directory>${basedir}/lib</directory>
+				<targetPath>BOOT-INF/lib/</targetPath>
+				<includes>
+					<include>**/*.jar</include>
+				</includes>
+			</resource>
+			&lt;!&ndash; 一般本地调试时，需要将其注释掉，某些情况下，打包后运行不起来需要打开注释 &ndash;&gt;
+			<resource>
+				<directory>${basedir}/src/main/resources</directory>
+				<targetPath>BOOT-INF/classes</targetPath>
+				<includes>
+					<include>**/**</include>
+				</includes>
+				<filtering>false</filtering>
+			</resource>
+		</resources>-->
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<!-- 指定该Main Class为全局的唯一入口 -->
+					<mainClass>com.eb.test.DemoApplication</mainClass>
+					<layout>ZIP</layout>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>repackage</goal><!--可以把依赖的包都打包到生成的Jar包中-->
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+		<finalName>easybuy-web</finalName>
+	</build>
+
+</project>

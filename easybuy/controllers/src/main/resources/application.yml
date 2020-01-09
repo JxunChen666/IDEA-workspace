@@ -1,0 +1,62 @@
+#公共配置与profiles选择无关 mapperLocations指的路径是src/main/resources
+#公共配置与profiles选择无关
+
+spring: 
+ # redis
+ redis:
+   host: 127.0.0.1
+   port: 6379
+
+# resources:
+#   static-locations: classpath:/static/
+
+ thymeleaf:
+   mode: LEGACYHTML5
+   check-template: false
+   prefix: classpath:/templates/
+   suffix: .html
+   servlet:
+     content-type: text/html
+
+
+
+
+
+mybatis:
+  config-location: classpath:Mybatis/MybatisCfg.xml
+  mapper-locations: classpath:Mybatis/Mappers/*.xml
+  type-aliases-package: com.eb.test.model
+
+
+---
+  
+spring:
+  datasource:
+    username:  root
+    password:  123
+    url: jdbc:mysql://127.0.0.1:3306/easybuy?useUnicode=true&characterEncoding=utf-8
+    driver-class-name: com.mysql.jdbc.Driver
+    # 指定自己使用的数据源
+    type: com.alibaba.druid.pool.DruidDataSource
+
+    # DruidDataSource 其他属性配置
+    druid:
+     initialSize: 5
+     minIdle: 5
+     maxActive: 20
+     maxWait: 60000
+     timeBetweenEvictionRunsMillis: 60000
+     minEvictableIdleTimeMillis: 300000
+     validationQuery: SELECT 1 FROM DUAL
+     testWhileIdle: true
+     testOnBorrow: false
+     testOnReturn: false
+     poolPreparedStatements: true
+     maxPoolPreparedStatementPerConnectionSize: 20
+     useGlobalDataSourceStat: true
+     filter:
+      stat:
+       enabled: true
+       log-slow-sql: true
+      wall:
+       enabled: true
