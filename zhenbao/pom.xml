@@ -22,7 +22,7 @@
         <mybatis.version>3.3.0</mybatis.version>
         <spring.version>4.3.1.RELEASE</spring.version>
         <freemarker.version>2.3.23</freemarker.version>
-        <shiro.version>1.2.4</shiro.version>
+        <shiro.version>1.6.0</shiro.version>
         <commons-lang3.version>3.4</commons-lang3.version>
         <aspectj.version>1.8.7</aspectj.version>
         <jackson.version>1.9.13</jackson.version>
