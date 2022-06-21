@@ -18,7 +18,7 @@
         <maven.compiler.source>1.7</maven.compiler.source>
         <maven.compiler.target>1.7</maven.compiler.target>
         <druid.version>1.0.16</druid.version>
-        <mysql.version>5.1.37</mysql.version>
+        <mysql.version>8.0.28</mysql.version>
         <mybatis.version>3.3.0</mybatis.version>
         <spring.version>4.3.1.RELEASE</spring.version>
         <freemarker.version>2.3.23</freemarker.version>
